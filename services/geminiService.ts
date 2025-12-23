@@ -3,7 +3,11 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Suggestion } from "../types";
 
 // Note: API key is automatically injected via process.env.API_KEY
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// But we also check localStorage to allow user-provided keys for deployment.
+const getAI = () => {
+  const userKey = typeof window !== 'undefined' ? localStorage.getItem('gemini_api_key') : null;
+  return new GoogleGenAI({ apiKey: userKey || process.env.API_KEY || '' });
+};
 
 /**
  * Helper to extract mime type and base64 data from a data URL.

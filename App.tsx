@@ -147,8 +147,27 @@ const App: React.FC = () => {
     }
   };
 
+  const [apiKey, setApiKey] = useState(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem('gemini_api_key') || '' : '';
+  });
+  const [showSettings, setShowSettings] = useState(false);
+
+  const handleApiKeyChange = (val: string) => {
+    setApiKey(val);
+    if (val) {
+      localStorage.setItem('gemini_api_key', val);
+    } else {
+      localStorage.removeItem('gemini_api_key');
+    }
+  };
+
   const handleMagicCaption = async () => {
     if (!memeState.imageUrl) return;
+    const activeKey = apiKey || process.env.API_KEY;
+    if (!activeKey) {
+      setShowSettings(true);
+      return;
+    }
     setIsAnalyzing(true);
     try {
       const base64Data = await getAsBase64(memeState.imageUrl);
@@ -164,7 +183,7 @@ const App: React.FC = () => {
       }
     } catch (err) {
       console.error(err);
-      alert("AI was unable to process this image. Try uploading a different file or a template.");
+      alert("AI was unable to process this image. Check your API key or try a different file.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -224,6 +243,14 @@ const App: React.FC = () => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" /></svg>
               </button>
             </div>
+
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-2 rounded-xl border transition-all ${apiKey ? 'text-indigo-400 border-indigo-500/20 bg-indigo-500/5' : 'text-amber-400 border-amber-500/20 bg-amber-500/5 animate-pulse'}`}
+              title="Settings & API Key"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </button>
 
             <label className="cursor-pointer bg-white/5 hover:bg-white/10 transition px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-white/10">
               <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -561,14 +588,50 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <footer className="max-w-7xl mx-auto w-full px-8 py-12 flex flex-col md:flex-row items-center justify-between border-t border-white/5 text-slate-600 text-[10px] font-bold uppercase tracking-[0.3em]">
-        <div className="flex items-center gap-4 mb-4 md:mb-0">
-          <span className="text-slate-400">Gemini Pro Vision</span>
-          <span className="w-1 h-1 bg-slate-800 rounded-full" />
-          <span className="text-slate-400">Gemini 2.5 Flash Image</span>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-black text-white uppercase italic">Project Settings</h2>
+              <button onClick={() => setShowSettings(false)} className="text-slate-500 hover:text-white transition">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Gemini API Key</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={e => handleApiKeyChange(e.target.value)}
+                    placeholder="Enter your API Key..."
+                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <svg className={`w-4 h-4 ${apiKey ? 'text-green-500' : 'text-slate-600'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-[9px] text-slate-500 leading-relaxed px-1">
+                  Your key is stored locally in your browser. Get one for free at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline">Google AI Studio</a>.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowSettings(false)}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black py-3 rounded-xl hover:scale-[1.02] transition-all shadow-lg shadow-indigo-600/20"
+            >
+              DONE
+            </button>
+          </div>
         </div>
-        <div>MemeGenie AI &copy; 2025 Creative Intelligence</div>
-      </footer>
+      )}
     </div>
   );
 };
