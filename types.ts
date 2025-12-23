@@ -6,7 +6,8 @@ export interface MemeState {
   imageUrl: string | null;
   topText: string;
   bottomText: string;
-  fontSize: number;
+  topFontSize: number;
+  bottomFontSize: number;
   textColor: string;
   fontFamily: string;
   topOffset: number;    // % from top (or Y position)

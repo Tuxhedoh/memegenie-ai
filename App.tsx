@@ -11,7 +11,8 @@ const App: React.FC = () => {
     imageUrl: null,
     topText: 'ENTER TOP TEXT',
     bottomText: 'ENTER BOTTOM TEXT',
-    fontSize: DEFAULT_FONT_SIZE,
+    topFontSize: DEFAULT_FONT_SIZE,
+    bottomFontSize: DEFAULT_FONT_SIZE,
     textColor: '#ffffff',
     fontFamily: DEFAULT_FONT_FAMILY,
     topOffset: 5,
@@ -178,6 +179,8 @@ const App: React.FC = () => {
           ...prev,
           topText: res[0].top,
           bottomText: res[0].bottom,
+          topFontSize: DEFAULT_FONT_SIZE,
+          bottomFontSize: DEFAULT_FONT_SIZE,
           textColor: res[0].suggestedColor || '#ffffff'
         }));
       }
@@ -263,10 +266,10 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative items-start">
 
         {/* Left Section: Visuals */}
-        <div className="lg:col-span-7 space-y-8">
+        <div className="lg:col-span-7 space-y-8 lg:sticky lg:top-24 h-fit">
           <MemeCanvas
             state={memeState}
             onUpdateState={(update) => setMemeState(prev => ({ ...prev, ...update }))}
@@ -445,10 +448,7 @@ const App: React.FC = () => {
             {/* Text Inputs with Offsets */}
             <div className="space-y-6">
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Top Caption</label>
-                  <span className="text-[9px] text-slate-600">{Math.round(memeState.topOffset)}%</span>
-                </div>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Top Caption</label>
                 <input
                   value={memeState.topText}
                   onChange={e => {
@@ -459,20 +459,34 @@ const App: React.FC = () => {
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-base sm:text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                   placeholder="TOP TEXT"
                 />
-                <input
-                  type="range" min="0" max="100" step="1"
-                  value={memeState.topOffset}
-                  onChange={e => setMemeState(prev => ({ ...prev, topOffset: parseInt(e.target.value) }))}
-                  onMouseUp={() => pushState(memeState)}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[9px] font-bold text-slate-600 uppercase">Text Y</span>
+                    <span className="text-[9px] text-slate-600">{Math.round(memeState.topOffset)}%</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="100" step="1"
+                    value={memeState.topOffset}
+                    onChange={e => setMemeState(prev => ({ ...prev, topOffset: parseInt(e.target.value) }))}
+                    onMouseUp={() => pushState(memeState)}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                  <div className="flex justify-between items-center px-1 pt-1">
+                    <span className="text-[9px] font-bold text-slate-600 uppercase">Size</span>
+                    <span className="text-[9px] text-slate-600">{memeState.topFontSize}px</span>
+                  </div>
+                  <input
+                    type="range" min="12" max="140" step="1"
+                    value={memeState.topFontSize}
+                    onChange={e => setMemeState(prev => ({ ...prev, topFontSize: parseInt(e.target.value) }))}
+                    onMouseUp={() => pushState(memeState)}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Bottom Caption</label>
-                  <span className="text-[9px] text-slate-600">{Math.round(memeState.bottomOffset)}%</span>
-                </div>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Bottom Caption</label>
                 <input
                   value={memeState.bottomText}
                   onChange={e => {
@@ -483,18 +497,35 @@ const App: React.FC = () => {
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-base sm:text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                   placeholder="BOTTOM TEXT"
                 />
-                <input
-                  type="range" min="0" max="100" step="1"
-                  value={memeState.bottomOffset}
-                  onChange={e => setMemeState(prev => ({ ...prev, bottomOffset: parseInt(e.target.value) }))}
-                  onMouseUp={() => pushState(memeState)}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[9px] font-bold text-slate-600 uppercase">Text Y</span>
+                    <span className="text-[9px] text-slate-600">{Math.round(memeState.bottomOffset)}%</span>
+                  </div>
+                  <input
+                    type="range" min="0" max="100" step="1"
+                    value={memeState.bottomOffset}
+                    onChange={e => setMemeState(prev => ({ ...prev, bottomOffset: parseInt(e.target.value) }))}
+                    onMouseUp={() => pushState(memeState)}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                  <div className="flex justify-between items-center px-1 pt-1">
+                    <span className="text-[9px] font-bold text-slate-600 uppercase">Size</span>
+                    <span className="text-[9px] text-slate-600">{memeState.bottomFontSize}px</span>
+                  </div>
+                  <input
+                    type="range" min="12" max="140" step="1"
+                    value={memeState.bottomFontSize}
+                    onChange={e => setMemeState(prev => ({ ...prev, bottomFontSize: parseInt(e.target.value) }))}
+                    onMouseUp={() => pushState(memeState)}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Styling */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Typeface</label>
                 <select
@@ -506,16 +537,6 @@ const App: React.FC = () => {
                     <option key={font.value} value={font.value}>{font.name}</option>
                   ))}
                 </select>
-              </div>
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Size ({memeState.fontSize}px)</label>
-                <input
-                  type="range" min="12" max="140" step="1"
-                  value={memeState.fontSize}
-                  onChange={e => setMemeState(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
-                  onMouseUp={() => pushState(memeState)}
-                  className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
               </div>
             </div>
 
@@ -632,7 +653,8 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+
+    </div >
   );
 };
 

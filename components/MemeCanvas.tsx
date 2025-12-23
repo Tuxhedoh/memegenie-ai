@@ -26,8 +26,52 @@ const MemeCanvas: React.FC<Props> = ({ state, onUpdateState }) => {
     img.crossOrigin = "anonymous";
     img.src = state.imageUrl;
     img.onload = () => {
+      // Helper to wrap text
+      const getWrappedLines = (text: string, maxWidth: number, font: string) => {
+        if (!text) return []; // Handle empty text
+        ctx.save();
+        ctx.font = font;
+        const manualLines = text.toUpperCase().split('\n');
+        const wrappedLines: string[] = [];
+
+        manualLines.forEach(l => {
+          if (l.trim() === '') {
+            wrappedLines.push('');
+            return;
+          }
+          const words = l.split(' ');
+          let currentLine = words[0];
+          for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = ctx.measureText(currentLine + " " + word).width;
+            if (width < maxWidth) {
+              currentLine += " " + word;
+            } else {
+              wrappedLines.push(currentLine);
+              currentLine = word;
+            }
+          }
+          wrappedLines.push(currentLine);
+        });
+        ctx.restore();
+        return wrappedLines;
+      };
+
       const maxWidth = 800;
       const scale = maxWidth / img.width;
+      const textMaxWidth = maxWidth * 0.9;
+
+      // Prepare fonts for measuring
+      const topFont = state.style === 'modern'
+        ? `600 ${state.topFontSize * 0.8}px Inter, sans-serif`
+        : (state.style === 'demotivational' ? `${state.topFontSize}px "Times New Roman", serif` : `900 ${state.topFontSize}px ${state.fontFamily}`);
+
+      const bottomFont = state.style === 'demotivational'
+        ? `${state.bottomFontSize * 0.6}px "Times New Roman", serif`
+        : `900 ${state.bottomFontSize}px ${state.fontFamily}`;
+
+      const topLines = getWrappedLines(state.topText, textMaxWidth, topFont);
+      const bottomLines = getWrappedLines(state.bottomText, textMaxWidth, bottomFont);
 
       // Calculate canvas height based on style
       let canvasWidth = maxWidth;
@@ -35,13 +79,13 @@ const MemeCanvas: React.FC<Props> = ({ state, onUpdateState }) => {
       let imageYOffset = 0;
 
       if (state.style === 'modern') {
-        // Add space at the top for modern style
-        const boxHeight = 100 + (state.topText.split('\n').length * state.fontSize * 0.5);
+        // Add space at the top for modern style based on wrapped lines
+        const boxHeight = 100 + (topLines.length * state.topFontSize * 0.6);
         canvasHeight += boxHeight;
         imageYOffset = boxHeight;
       } else if (state.style === 'demotivational') {
         canvasWidth += 100;
-        canvasHeight += 150;
+        canvasHeight += 250;
         imageYOffset = 50;
       }
 
@@ -92,35 +136,33 @@ const MemeCanvas: React.FC<Props> = ({ state, onUpdateState }) => {
       }
 
       // Draw text
-      const drawText = (text: string, xPercent: number, yPercent: number, isBottom: boolean) => {
-        const lines = text.toUpperCase().split('\n');
+      const drawTextLines = (lines: string[], xPercent: number, yPercent: number, isBottom: boolean, font: string, fontSize: number) => {
         const x = (canvas.width * xPercent) / 100;
         const y = (canvas.height * yPercent) / 100;
 
         ctx.save();
+        ctx.font = font;
 
         if (state.style === 'modern' && !isBottom) {
           ctx.fillStyle = 'black';
-          ctx.font = `600 ${state.fontSize * 0.8}px Inter, sans-serif`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'top';
           lines.forEach((line, i) => {
-            ctx.fillText(line, 20, 20 + i * (state.fontSize * 0.9));
+            ctx.fillText(line, 20, 20 + i * (fontSize * 1.1));
           });
         } else if (state.style === 'demotivational') {
           ctx.fillStyle = 'white';
-          ctx.font = `${isBottom ? state.fontSize * 0.6 : state.fontSize}px "Times New Roman", serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
-          const textY = isBottom ? (img.height * scale) + 70 : (img.height * scale) + 120;
+          const textY = isBottom ? (img.height * scale) + imageYOffset + 20 : (img.height * scale) + imageYOffset + 70;
           lines.forEach((line, i) => {
-            ctx.fillText(line, canvas.width / 2, textY + i * (state.fontSize * 1.1));
+            ctx.fillText(line, canvas.width / 2, textY + i * (fontSize * 1.2));
           });
         } else {
           // Classic Style
           ctx.fillStyle = state.textColor;
           ctx.strokeStyle = 'black';
-          ctx.lineWidth = Math.max(2, state.fontSize / 10);
+          ctx.lineWidth = Math.max(2, fontSize / 10);
 
           // Determine alignment based on position
           let textAlign: CanvasTextAlign = 'center';
@@ -128,7 +170,6 @@ const MemeCanvas: React.FC<Props> = ({ state, onUpdateState }) => {
           else if (xPercent >= 90) textAlign = 'right';
 
           ctx.textAlign = textAlign;
-          ctx.font = `900 ${state.fontSize}px ${state.fontFamily}`;
           ctx.textBaseline = isBottom ? 'bottom' : 'top';
 
           // Adjust X for left/right alignment to respect margins
@@ -139,8 +180,8 @@ const MemeCanvas: React.FC<Props> = ({ state, onUpdateState }) => {
 
           lines.forEach((line, i) => {
             const lineY = !isBottom
-              ? y + i * (state.fontSize * 1.1)
-              : y - (lines.length - 1 - i) * (state.fontSize * 1.1);
+              ? y + i * (fontSize * 1.1)
+              : y - (lines.length - 1 - i) * (fontSize * 1.1);
 
             ctx.strokeText(line, drawX, lineY);
             ctx.fillText(line, drawX, lineY);
@@ -149,8 +190,8 @@ const MemeCanvas: React.FC<Props> = ({ state, onUpdateState }) => {
         ctx.restore();
       };
 
-      if (state.topText) drawText(state.topText, state.topX ?? 50, state.topOffset, false);
-      if (state.bottomText) drawText(state.bottomText, state.bottomX ?? 50, state.bottomOffset, true);
+      if (state.topText) drawTextLines(topLines, state.topX ?? 50, state.topOffset, false, topFont, state.topFontSize);
+      if (state.bottomText) drawTextLines(bottomLines, state.bottomX ?? 50, state.bottomOffset, true, bottomFont, state.bottomFontSize);
     };
   }, [state, isDragging, activeGuides]);
 

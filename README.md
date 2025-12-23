@@ -56,8 +56,7 @@ Transform ideas into viral content with advanced Gemini-powered features.
 - **Frontend**: React, TypeScript, Vite
 - **Styling**: Tailwind CSS, Lucide Icons
 - **AI Engine**: 
-  - `gemini-3-pro-preview` for caption analysis and suggestion.
-  - `gemini-2.5-flash-image` for background generation and image editing.
+  - `gemini-2.0-flash` for caption analysis, background generation, and image editing.
 - **Storage**: Browser LocalStorage for the meme gallery.
 
 ---

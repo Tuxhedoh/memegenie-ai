@@ -29,7 +29,7 @@ export async function suggestCaptions(base64Image: string, tone: string = 'sarca
   const { mimeType, data } = parseBase64Image(base64Image);
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash',
     contents: {
       parts: [
         {
@@ -75,7 +75,7 @@ export async function suggestCaptions(base64Image: string, tone: string = 'sarca
 export async function generateMemeBackground(prompt: string): Promise<string | null> {
   const ai = getAI();
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
+    model: 'gemini-2.0-flash',
     contents: {
       parts: [
         {
@@ -107,7 +107,7 @@ export async function editMemeImage(base64Image: string, prompt: string): Promis
   const { mimeType, data } = parseBase64Image(base64Image);
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
+    model: 'gemini-2.0-flash',
     contents: {
       parts: [
         {
